@@ -7,6 +7,7 @@
 
 typedef struct sub_state sub_state;
 const int ATOMIC_NUM = 8;   // 原子场景数量（有n个原子场景，state的数值就要n个bit）
+const int CMD_BIT_NUM = 32;   // 原子场景数量（有n个原子场景，state的数值就要n个bit）
 
 char to_deal[CHAR_MAX_LENGTH];  // 待处理的一行文本
 char cut_str[CHAR_MAX_LENGTH];  // to_deal的部分文本
@@ -21,7 +22,7 @@ struct sub_state *sub_state_head;       //（空 头节点）
 int state_num = 0;          // 读取的state数量
 int permission_num = 0;     // 读取的permission数量
 
-// 初始化变量和链表头
+/* 初始化变量和链表头*/
 void init(){
     states_head = (struct state_info*)malloc(sizeof(struct state_info));
     states_head->next = NULL;
@@ -38,7 +39,7 @@ void init(){
     per_edit_now = per_head;
 }
 
-// 释放所有占用的内存
+/* 释放所有占用的内存*/
 void free_all_mem(){
     struct state_info *state_free = states_head;
     struct permission_info *per_free = per_head;
@@ -69,7 +70,6 @@ void free_all_mem(){
             free(rule_head_tmp->object_type);
             free(rule_head_tmp->keyword);
             free(rule_head_tmp->file_path);
-            free(rule_head_tmp->file_flags);
 //            free(rule_head_tmp->cap_num);
             rule_free = rule_head_tmp;
             rule_head_tmp = rule_head_tmp->next;
@@ -88,7 +88,7 @@ void free_all_mem(){
     }
 }
 
-// 
+/* 检查每一行的长度不能过长*/
 int check_length_and_modify(int n){
     int index = 0;
         while (to_deal[index] != '\0'){
@@ -182,7 +182,7 @@ int sub_already_exist(struct state_info *father, char* state_in_edit){
     return 0;
 }
 
-// 拆分某一个单独的state
+/* 拆分某一个单独的state*/
 int single_state_split(struct state_info *father, char* state_in_edit, int index, struct sub_state *sub){
     if(index == ATOMIC_NUM){
         if(sub_already_exist(father, state_in_edit))
@@ -205,7 +205,7 @@ int single_state_split(struct state_info *father, char* state_in_edit, int index
     return 0;
 }
 
-// 拆分所有的state，并且处理好子集问题
+/* 拆分所有的state，并且处理好子集问题*/
 int state_split(){
     char * temp_char = (char *) malloc(sizeof(char) * ATOMIC_NUM + 1);
     char * to_free = temp_char;
@@ -219,30 +219,6 @@ int state_split(){
     return 0;
 }
 
-
-///* 十六进制读取辅助函数 */
-//int getIndexOfSigns(char ch){
-//    if (ch >= '0' && ch <= '9')
-//        return ch - '0';
-//    if (ch >= 'A' && ch <='F')
-//        return ch - 'A' + 10;
-//    if (ch >= 'a' && ch <= 'f')
-//        return ch - 'a' + 10;
-//    return -1;
-//}
-
-///* 十六进制读取 */
-//long hexToDec(char *source){
-//    long sum = 0;
-//    long t = 1;
-//    int i, len;
-//    len = strlen(source);
-//    for(i=len-1; i>=0; i--){
-//        sum += t * getIndexOfSigns(*(source + i));
-//        t *= 16;
-//    }
-//    return sum;
-//}
 
 int find_state(char *name){
     state_edit_now = states_head->next;
@@ -442,7 +418,7 @@ int read_single_permission_rule(int line_num){
             temp_rule->keyword = NULL;
             temp_rule->next = NULL;
 //            temp_rule->cap_num = NULL;
-            temp_rule->file_flags = NULL;
+            temp_rule->limits = 0;
             temp_rule->file_path = NULL;
 
             len = (int)strlen(to_deal);
@@ -460,7 +436,7 @@ int read_single_permission_rule(int line_num){
 
             /* 继续获取其他的子字符串 */
             record = strtok(NULL, " ");
-            if (record == NULL || (strcmp(record, "file") != 0 && strcmp(record, "cap") != 0)){
+            if (record == NULL || (strcmp(record, "file") != 0 && strcmp(record, "cap") != 0 && strcmp(record, "ioctl") != 0)){
                 printf("error : wrong object type in file: permission_rule line %d, it should be \"file\" or \"cap\" \n", line_num);
                 return -1;
             }
@@ -484,20 +460,20 @@ int read_single_permission_rule(int line_num){
                     printf("error : wrong file limits format in file: permission_rule line %d \n", line_num);
                     return -1;
                 }
+                temp_rule->limits = 0;
                 for (int i = 0; i < strlen(record); i++){
-                    if (record[i] != 'r' && record[i] != 'w' && record[i] != 'x'){
+                    if (record[i] == 'r')
+                        temp_rule->limits += 1;
+                    else if (record[i] == 'w')
+                        temp_rule->limits += 2;
+                    else if (record[i] == 'x')
+                        temp_rule->limits += 4;
+                    else {
                         printf("error : wrong file limits format in permission_rule line %d \n", line_num);
                         return -1;
                     }
                 }
-                temp_rule->file_flags = (char *)malloc(sizeof(char) * (strlen(record) + 1));
-                strcpy( temp_rule->file_flags, record);
-                record = strtok(NULL, " ");
-                if (record != NULL){
-                    printf("error : pls dont add other things after file limits in file: permission_rule line %d \n", line_num);
-                    return -1;
-                }
-            } else {
+            } else if (strcmp(temp_rule->object_type, "cap") == 0){
                 record = strtok(NULL, " ");
                 if (record == NULL){
                     printf("error : pls write capability number in file: permission_rule line %d \n", line_num);
@@ -515,9 +491,32 @@ int read_single_permission_rule(int line_num){
                     printf("error : wrong cap num in file: permission_rule line %d, it should be in 0-40 \n", line_num);
                     return -1;
                 }
-                temp_rule->cap_num = capnum;
-//                temp_rule->cap_num = (char *)malloc(sizeof(char) * (strlen(record) + 1));
-//                strcpy( temp_rule->cap_num, record);
+                temp_rule->limits = capnum;
+            } else {
+                record = strtok(NULL, " ");
+                if (record == NULL){
+                    printf("error : pls write file path after object type in file: permission_rule line %d \n", line_num);
+                    return -1;
+                }
+                temp_rule->file_path = (char *)malloc(sizeof(char) * (strlen(record) + 1));
+                strcpy( temp_rule->file_path, record);
+
+                record = strtok(NULL, " ");
+                if (record == NULL){
+                    printf("error : pls write ioctl cmd number after file path in file: permission_rule line %d \n", line_num);
+                    return -1;
+                }
+                if (strlen(record) >= CMD_BIT_NUM){
+                    printf("error : ioctl cmd number should be in -2^31 ~ (2^31 -1) in file: permission_rule line %d \n", line_num);
+                    return -1;
+                }
+                long cmdnum = atol(record);
+                temp_rule->limits = cmdnum;
+            }
+            record = strtok(NULL, " ");
+            if (record != NULL){
+                printf("error : pls dont add other things after file limits in file: permission_rule line %d \n", line_num);
+                return -1;
             }
             temp_rule->next = per_edit_now->rule_head->next;
             per_edit_now->rule_head->next = temp_rule;
@@ -703,13 +702,15 @@ void print_state_rule(){
         sub = sub_state_head->next;
         while (sub != NULL){
             allow = sub->father->permissions[per_edit_now->permission_num];
-            if(allow){
+            if (allow){
                 rule = per_edit_now->rule_head->next;
                 while (rule != NULL){
-                    if(strcmp(rule->object_type, "file") == 0){
-                        printf("state: %s; %s; %s; %s; %s; \n", sub->sub_num, rule->keyword, rule->object_type, rule->file_path, rule->file_flags);
-                    }else{
-                        printf("state: %s; %s; %s; %d; \n", sub->sub_num, rule->keyword, rule->object_type, rule->cap_num);
+                    if (strcmp(rule->object_type, "file") == 0){
+                        printf("state: %s; %s; %s; %s; %ld; \n", sub->sub_num, rule->keyword, rule->object_type, rule->file_path, rule->limits);
+                    } else if (strcmp(rule->object_type, "cap") == 0){
+                        printf("state: %s; %s; %s; %ld; \n", sub->sub_num, rule->keyword, rule->object_type, rule->limits);
+                    } else {
+                        printf("state: %s; %s; %s; %s; %ld; \n", sub->sub_num, rule->keyword, rule->object_type, rule->file_path, rule->limits);
                     }
                     rule = rule->next;
                 }
@@ -736,14 +737,18 @@ void generate_result(){
                 while (rule != NULL){
                     if(strcmp(rule->object_type, "file") == 0){
                         /* state（整数） level（整数） keyword（整数，0、1、2代表deny、allow、audit） 1（整数，代表“file”） path（字符串） limit（整数） */
-                        sprintf(to_deal, "%ld 0 %d 1 %s %d \n", b2i(sub->sub_num, ATOMIC_NUM), keyword2i(rule->keyword), rule->file_path,
-                               limit2i(rule->file_flags));
+                        sprintf(to_deal, "%ld 0 %d 1 %s %ld \n", b2i(sub->sub_num, ATOMIC_NUM), keyword2i(rule->keyword), rule->file_path,
+                               rule->limits);
                         fputs(to_deal, result);
-                    }else{
+                    } else if(strcmp(rule->object_type, "cap") == 0) {
                         /* state（整数） level（整数） keyword（整数，0、1、2代表deny、allow、audit） 0（代表“cap”） capnum（整数） */
-                        sprintf(to_deal, "%ld 0 %d 0 %d \n", b2i(sub->sub_num, ATOMIC_NUM), keyword2i(rule->keyword), rule->cap_num);
+                        sprintf(to_deal, "%ld 0 %d 0 %ld \n", b2i(sub->sub_num, ATOMIC_NUM), keyword2i(rule->keyword), rule->limits);
                         fputs(to_deal, result);
-                    } 
+                    } else {
+                        sprintf(to_deal, "%ld 0 %d 1 %s %ld \n", b2i(sub->sub_num, ATOMIC_NUM), keyword2i(rule->keyword), rule->file_path,
+                               rule->limits);
+                        fputs(to_deal, result);
+                    }
                     rule = rule->next;
                 }
             }

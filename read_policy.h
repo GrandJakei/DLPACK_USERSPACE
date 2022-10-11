@@ -22,10 +22,10 @@
 struct rule_info{
     char *keyword;      // rule的关键词
     char *object_type;  // 客体类型，"file" 或者 "cap"
-    int cap_num;
-//    char *cap_num;      // cap的编号
+    long limits;
+    // int cap_num;
     char *file_path;    // 文件路径
-    char *file_flags;   // 涉及到的 文件操作
+    // char *file_flags;   // 涉及到的 文件操作
     struct rule_info *next;
 };
 
