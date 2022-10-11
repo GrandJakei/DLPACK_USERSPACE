@@ -1,17 +1,17 @@
 // 保存state名称及编号的文件
-#define PATH_STATE "./policy/states"
+#define PATH_STATE "./policy_load/states"
 //#define PATH_STATE "e:\\states.txt"
 
 // 保存state_permission的文件
-#define PATH_STATE_PERMISSION  "./policy/state_per"
+#define PATH_STATE_PERMISSION  "./policy_load/state_per"
 //#define PATH_STATE_PERMISSION  "e:\\state_per.txt"
 
 // 保存permission_rule的文件
-#define PATH_PERMISSION_RULE "./policy/per_rule"
+#define PATH_PERMISSION_RULE "./policy_load/per_rule"
 //#define PATH_PERMISSION_RULE "e:\\per_rule.txt"
 
 // 保存所有permission名称的文件
-#define PATH_PERMISSION  "./policy/.permission"
+#define PATH_PERMISSION  "./policy_load/.permission"
 //#define PATH_PERMISSION  "e:\\permission.txt"
 
 #define CHAR_MAX_LENGTH 1024        // 一行字符串最多允许的字符数

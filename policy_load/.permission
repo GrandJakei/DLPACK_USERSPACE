@@ -1,0 +1,4 @@
+# 这个文件里只允许每一行填写一个Permission名称，名称只允许大写字母、数字、以及下划线组成
+READ_CAR_SPEED
+READ_CAR_ENERGY
+READ_CAR_POWERTRAIN

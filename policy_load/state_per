@@ -1,0 +1,18 @@
+# \etc\dlpack\default\state_per
+#  state-permission 白名单
+#  即某state下允许哪些permission执行
+
+# 以“state名称”开头
+$S HIGH_SPEED:
+    
+    # 可以单独添加允许的Permission，全部的Permission见Permission说明文档
+    + $P READ_CAR_SPEED
+    + $P READ_CAR_ENERGY
+    + $P READ_CAR_POWERTRAIN
+
+$S ECU_ERROR:
+    + $P READ_CAR_SPEED
+    + $P READ_CAR_ENERGY
+
+$S CAR_USER:
+    + $P READ_CAR_ENERGY

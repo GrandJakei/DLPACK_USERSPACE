@@ -1,0 +1,28 @@
+# \etc\dlpack\default\per_rule
+#  permission-rule映射规则
+#  即某个permission到底对应哪些规则
+
+
+$P READ_CAR_SPEED:
+    # 可以引用一组外部规则（默认在\etc\dlpack\include目录下）
+    #include <rules/window_stat_read>
+    
+    # 基本rule格式为 “+ 关键词 对象类型 具体对象 与规则关联的动作”
+    # （可能某些对象没有 “与规则关联的动作” ）
+    
+    # 文件类型：关联动作有r,w,x
+    + allow file /path/to/speed_file  rw
+    # （或许后期可以）支持文件通配符
+    + audit ioctl /path/to/speed/* 101111111111111111
+    
+    # capability类型：
+    + allow cap 20
+    
+    # 关键词暂时只有allow和audit
+    # audit在allow的同时，会记录此次行为
+    #+ audit ioctl /path/to/file2 10086
+
+$P READ_CAR_ENERGY:
+    + allow file /path/to/energy  rw
+$P READ_CAR_POWERTRAIN:
+    + allow ioctl /path/to/powertrain  222
