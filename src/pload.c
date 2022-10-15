@@ -10,7 +10,7 @@
 #define PATH_LOAD "/sys/kernel/security/dlpack/loadRules"
 #define PATH_CLEAN "/sys/kernel/security/dlpack/changeRules"
 #define PATH_POLICY "result"
-#define PATH_SERVICE_PID "/tmp/dlpack/pid"
+#define PATH_SERVICE_PID "/tmp/dlpack_pid"
 //#define PATH_POLICY "result"
 #define CHAR_MAX_LENGTH 256
 char to_deal[CHAR_MAX_LENGTH];  // 待处理的一行文本
