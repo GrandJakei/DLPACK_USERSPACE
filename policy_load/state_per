@@ -7,12 +7,10 @@ $S HIGH_SPEED:
     
     # 可以单独添加允许的Permission，全部的Permission见Permission说明文档
     + $P READ_CAR_SPEED
-    + $P READ_CAR_ENERGY
-    + $P READ_CAR_POWERTRAIN
+
 
 $S ECU_ERROR:
     + $P READ_CAR_SPEED
-    + $P READ_CAR_ENERGY
 
 $S CAR_USER:
     + $P READ_CAR_ENERGY

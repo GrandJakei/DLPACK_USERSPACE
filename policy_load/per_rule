@@ -13,7 +13,7 @@ $P READ_CAR_SPEED:
     # 文件类型：关联动作有r,w,x
     + allow file /path/to/speed_file  rw
     # （或许后期可以）支持文件通配符
-    + audit ioctl /path/to/speed/* 101111111111111111
+    + audit ioctl /path/to/speed/* 10
     
     # capability类型：
     + allow cap 20

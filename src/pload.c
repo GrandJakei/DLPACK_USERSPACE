@@ -3,29 +3,19 @@
 #include <string.h>
 #include <signal.h>
 #define PATH_LOAD "/sys/kernel/security/dlpack/loadRules"
+#define PATH_CLEAN "/sys/kernel/security/dlpack/changeRules"
 #define PATH_POLICY "result"
 #define PATH_SERVICE_PID "/sbin/dlpack/pid"
 //#define PATH_POLICY "result"
 #define CHAR_MAX_LENGTH 256
-int to_kernel_max_len = 512, to_kernel_now_len = 0;
 char to_deal[CHAR_MAX_LENGTH];  // 待处理的一行文本
 char *to_kernel;
 
-int append(){
-    int len = strlen(to_deal);
-    if (len + to_kernel_now_len >= to_kernel_max_len){
-    	to_kernel_max_len = to_kernel_max_len * 2;
-    	char *tmp = malloc(sizeof(char) * to_kernel_max_len);
-    	strcpy(tmp, to_kernel);
-    	free(to_kernel);
-    	to_kernel = tmp;
-    }
-    to_kernel_now_len += len;
-    strcat(to_kernel, to_deal);
-}
 int main() {
     FILE *f_policy = fopen(PATH_POLICY, "r");
     FILE *f_load = fopen(PATH_LOAD, "w");
+    FILE *f_clean = fopen(PATH_CLEAN, "w");
+
     if(f_policy == NULL){
         printf("error : fail to open profile f_policy in %s! please run pcheck first.\n", PATH_POLICY);
         goto error;
@@ -34,17 +24,27 @@ int main() {
         printf("error : fail to write in %s! may not have enough permission.\n", PATH_LOAD);
         goto error;
     }
-    int index, pid;
-    to_kernel = malloc(sizeof(char) * to_kernel_max_len);
-    while (fgets(to_deal, CHAR_MAX_LENGTH, f_policy) != NULL){
-    	append();
+    if(f_clean == NULL){
+        printf("error : fail to write in %s! may not have enough permission.\n", PATH_CLEAN);
+        goto error;
     }
-    to_kernel[strlen(to_kernel) - 1] = '\0';
+
+    // 清空内核策略
+    int index, pid;
+    fputs("clean", f_clean);
+
+    // 
+    to_kernel = malloc(sizeof(char) * CHAR_MAX_LENGTH);
+    while (fgets(to_deal, CHAR_MAX_LENGTH, f_policy) != NULL){
+        to_kernel[strlen(to_kernel) - 1] = '\0';
+    	fputs(to_kernel, f_load);
+    }
     printf("to_kernel : %s \n", to_kernel);
     fputs(to_kernel, f_load);
     printf("policy loading done successfully! \n");
     fclose(f_load);
     fclose(f_policy);
+    fclose(f_clean);
 error:
     return 0;
 }
