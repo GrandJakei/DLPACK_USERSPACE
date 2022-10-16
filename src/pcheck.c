@@ -463,11 +463,11 @@ int read_single_permission_rule(int line_num){
                 temp_rule->limits = 0;
                 for (int i = 0; i < strlen(record); i++){
                     if (record[i] == 'r')
-                        temp_rule->limits += 1;
+                        temp_rule->limits += 4;
                     else if (record[i] == 'w')
                         temp_rule->limits += 2;
                     else if (record[i] == 'x')
-                        temp_rule->limits += 4;
+                        temp_rule->limits += 1;
                     else {
                         printf("error : wrong file limits format in permission_rule line %d \n", line_num);
                         return -1;
@@ -745,7 +745,7 @@ void generate_result(){
                         sprintf(to_deal, "%ld 0 %d 0 %ld \n", b2i(sub->sub_num, ATOMIC_NUM), keyword2i(rule->keyword), rule->limits);
                         fputs(to_deal, result);
                     } else {
-                        sprintf(to_deal, "%ld 0 %d 1 %s %ld \n", b2i(sub->sub_num, ATOMIC_NUM), keyword2i(rule->keyword), rule->file_path,
+                        sprintf(to_deal, "%ld 0 %d 2 %s %ld \n", b2i(sub->sub_num, ATOMIC_NUM), keyword2i(rule->keyword), rule->file_path,
                                rule->limits);
                         fputs(to_deal, result);
                     }

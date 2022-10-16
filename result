@@ -1,7 +1,7 @@
-254 0 1 1 /path/to/energy 3 
+254 0 1 1 /path/to/energy 6 
 255 0 1 0 20 
 255 0 2 1 /path/to/speed/* 10 
-255 0 1 1 /path/to/speed_file 3 
+255 0 1 1 /path/to/speed_file 6 
 170 0 1 0 20 
 170 0 2 1 /path/to/speed/* 10 
-170 0 1 1 /path/to/speed_file 3 
+170 0 1 1 /path/to/speed_file 6 
