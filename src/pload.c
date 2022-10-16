@@ -35,6 +35,7 @@ int main() {
     // 清空内核策略
     int index, pid;
     fputs("clean", f_clean);
+    fclose(f_clean);
 
     // 
     int i  = 0;
@@ -47,7 +48,6 @@ int main() {
     printf("policy loading done successfully! \n");
     fclose(f_load);
     fclose(f_policy);
-    fclose(f_clean);
     stop = clock();
     printf("duration is : %f \n",((double)(stop-start))/CLOCKS_PER_SEC);
 error:
