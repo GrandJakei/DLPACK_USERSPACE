@@ -2,69 +2,55 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/shm.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <time.h>
 #define PATH_LOAD "/sys/kernel/security/dlpack/loadRules"
 #define PATH_CLEAN "/sys/kernel/security/dlpack/changeRules"
 #define PATH_POLICY "result"
-#define PATH_SERVICE_PID "/tmp/dlpack_pid"
+#define PATH_SERVICE_PID "/sbin/dlpack/pid"
 //#define PATH_POLICY "result"
 #define CHAR_MAX_LENGTH 256
 char to_deal[CHAR_MAX_LENGTH];  // 待处理的一行文本
 
 int main() {
-    int f_policy = open(PATH_POLICY, O_RDONLY);
-    int f_load = open(PATH_LOAD, O_RDWR);
-    int f_clean = open(PATH_CLEAN, O_RDWR);
-    int f_service = open(PATH_SERVICE_PID, O_RDONLY);
 
+	clock_t start,stop;
+	start = clock();
+    FILE *f_policy = fopen(PATH_POLICY, "r");
+    FILE *f_load = fopen(PATH_LOAD, "w");
+    FILE *f_clean = fopen(PATH_CLEAN, "w");
 
-    key_t key = 39242235;
-	int pid = 0;
-
-
-    if(!f_policy){
+    if(f_policy == NULL){
         printf("error : fail to open profile f_policy in %s! please run pcheck first.\n", PATH_POLICY);
         goto error;
     }
-    if(!f_load){
+    if(f_load == NULL){
         printf("error : fail to write in %s! may not have enough permission.\n", PATH_LOAD);
         goto error;
     }
-    if(!f_clean){
+    if(f_clean == NULL){
         printf("error : fail to write in %s! may not have enough permission.\n", PATH_CLEAN);
         goto error;
     }
-     if(!f_service){
-        printf("error : fail to communicate with state collection service, pls make sure it's working normally.\n");
-    } else {
-    	read(f_service, to_deal, CHAR_MAX_LENGTH);
-        pid = atoi(to_deal);
-    }
-
-    if (pid != 0)
-        kill(pid, SIGUSR1);
 
     // 清空内核策略
-    write(f_clean, "clean", 6);
+    int index, pid;
+    fputs("clean", f_clean);
 
     // 
-    while (read(f_policy, to_deal, CHAR_MAX_LENGTH) > 0){
+    int i  = 0;
+    while (fgets(to_deal, CHAR_MAX_LENGTH, f_policy) != NULL){
         to_deal[strlen(to_deal) - 1] = '\0';
-    	write(f_load, to_deal, strlen(to_deal));
-    	printf("to_kernel : %s \n", to_deal);
+    	fputs(to_deal, f_load);
+    	fflush(f_load);
+    	printf("to_kernel %d: %s \n", ++i, to_deal);
     }
     printf("policy loading done successfully! \n");
-
-    if (pid != 0)
-        kill(pid, SIGUSR2);
-
-    close(f_load);
-    close(f_policy);
-    close(f_clean);
+    fclose(f_load);
+    fclose(f_policy);
+    fclose(f_clean);
+    stop = clock();
+    printf("duration is : %f \n",((double)(stop-start))/CLOCKS_PER_SEC);
 error:
     return 0;
 }
+
