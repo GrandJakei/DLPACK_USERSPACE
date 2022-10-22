@@ -268,6 +268,10 @@ int read_single_state(int line_num){
                         return -1;
                     }
                 }
+                if (find_state(cut_str) != -1){
+                    printf("error : repetitive State name in file: states line %d!\n", line_num);
+                    return -1;
+                }
                 state_tmp = (struct state_info *) malloc(sizeof(struct state_info));
                 state_tmp->state_name = (char *)malloc(sizeof(char) * (index - 3 + 1));
                 strcpy(state_tmp->state_name, cut_str);
@@ -560,6 +564,10 @@ int permission_name_init(){
                 return -1;
             }
             index ++;
+        }
+        if (find_permission(to_deal) != -1){
+            printf("error : repetitive Permission name in file: .permission line %d!\n", linenum);
+            return -1;
         }
         per_tmp = (struct permission_info *) malloc(sizeof(struct permission_info));
 
