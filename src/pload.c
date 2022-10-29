@@ -40,8 +40,7 @@ int main() {
         goto error;
     }
     if(f_syscall_pattern == NULL){
-        printf("error : fail to open profile syscall_pattern in %s!\n", PATH_SYSCALL_PATTERN);
-        goto error;
+        printf("error : fail to open profile pattern, only load policy!\n");
     }
 
     // 清空内核策略
@@ -58,16 +57,19 @@ int main() {
     	printf("to_kernel %d: %s \n", ++i, to_deal);
     }
     printf("policy loading done successfully! \n");
-    while (fgets(to_deal, CHAR_MAX_LENGTH, f_syscall_pattern) != NULL){
-        to_deal[strlen(to_deal) - 1] = '\n';
-    	fputs(to_deal, f_load_sp);
-    	fflush(f_load_sp);
-    	printf("to_kernel %d: %s \n", ++i, to_deal);
+    if(f_syscall_pattern != NULL){
+        while (fgets(to_deal, CHAR_MAX_LENGTH, f_syscall_pattern) != NULL){
+            to_deal[strlen(to_deal) - 1] = '\n';
+            fputs(to_deal, f_load_sp);
+            fflush(f_load_sp);
+            printf("to_kernel %d: %s \n", ++i, to_deal);
+        }
+        fclose(f_syscall_pattern);
     }
+    
     fclose(f_load);
     fclose(f_policy);
     fclose(f_load_sp);
-    fclose(f_syscall_pattern);
     stop = clock();
     printf("duration is : %f \n",((double)(stop-start))/CLOCKS_PER_SEC);
 error:
