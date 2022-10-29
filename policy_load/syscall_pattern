@@ -1,1 +1,3 @@
-$P open ioctl
+open ioctl | READ_CAR_SPEED
+open ioctl open | READ_CAR_SPEED
+open | READ_CAR_SPEED

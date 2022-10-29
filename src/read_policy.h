@@ -14,6 +14,8 @@
 #define PATH_PERMISSION  "./policy_load/.permission"
 //#define PATH_PERMISSION  "e:\\permission.txt"
 
+#define PATH_SYSCALL_PATTERN "./policy_load/syscall_pattern"
+
 #define CHAR_MAX_LENGTH 1024        // 一行字符串最多允许的字符数
 
 #define DL_MAX_RULE_NUM 256         // 策略允许下，每个state下允许最多的rule数量

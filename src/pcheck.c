@@ -316,19 +316,7 @@ int add_state_permission(char *per_name){
     if(find_permission(per_name) == -1)
         return -1;
     state_edit_now->permissions[per_edit_now->permission_num] = 1;
-//    printf("state: %s; %d; \n", state_edit_now->state_num, per_edit_now->permission_num);
     return 0;
-
-//    struct rule_info *rule_head = per_edit_now->rule_head;
-//    while(rule_head != NULL){
-//        if(strcmp(rule_head->object_type, "file") == 0){
-//            printf("state: %x; %s; %s; %s; %s; \n", state_edit_now->state_num, rule_head->keyword, rule_head->object_type, rule_head->file_path, rule_head->file_flags);
-//        }else{
-//            printf("state: %x; %s; %s; %s; \n", state_edit_now->state_num, rule_head->keyword, rule_head->object_type, rule_head->cap_num);
-//        }
-//        rule_head = rule_head->next;
-//    }
-//    return 0;
 }
 
 /* 解析单行的state-permission配置 */
@@ -406,8 +394,6 @@ int read_single_permission_rule(int line_num){
             printf("error : wrong permission name in permission_rule line %d \n", line_num);
             return -1;
         }else return 0;
-//        printf("error : lack of ':' in permission_rule line %d \n", line_num);
-//        return -1;
     }
     while(to_deal[index] != '\0'){
         if(to_deal[index] == '#')
@@ -421,7 +407,7 @@ int read_single_permission_rule(int line_num){
             temp_rule->object_type = NULL;
             temp_rule->keyword = NULL;
             temp_rule->next = NULL;
-//            temp_rule->cap_num = NULL;
+
             temp_rule->limits = 0;
             temp_rule->file_path = NULL;
 
@@ -766,6 +752,77 @@ void generate_result(){
     }
     fclose(result);
 }
+void generate_pattern(char *patterns, struct rule_info *rule, int linenum){
+    FILE *pattern = fopen( "pattern", "a" );
+    while (rule != NULL){
+        if(strcmp(rule->object_type, "file") == 0){
+            /*  level（整数） keyword（整数，0、1、2代表deny、allow、audit） 1（整数，代表“file”） path（字符串） limit（整数） */
+            printf("add pattern %s | %d %d 1 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
+            sprintf(cut_str, "%s | %d %d 1 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
+        } else if(strcmp(rule->object_type, "cap") == 0) {
+            /*  level（整数） keyword（整数，0、1、2代表deny、allow、audit） 0（代表“cap”） capnum（整数） */
+            printf("add pattern %s | %d %d 0 %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->limits);
+            sprintf(cut_str, "%s | %d %d 0 %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->limits);
+        } else {
+            printf("add pattern %s | %d %d 2 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
+            sprintf(cut_str, "%s | %d %d 2 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
+        }
+        fputs(cut_str, pattern);
+        rule = rule->next;
+    }
+    fclose(pattern);
+}
+
+int read_single_pattern(int linenum){
+    int index = 0;
+    char *permissions, *one_pattern;
+    char *patterns = to_deal;
+    while (to_deal[index] != '\0'){
+        if (to_deal[index] == '\n'){
+            to_deal[index] = '\0';
+            break;
+        }
+        if (to_deal[index] == '|'){
+            to_deal[index] = '\0';
+            permissions = to_deal + index + 1;
+        }
+        index ++;
+    }
+    printf("permissions is %s\n", permissions);
+    one_pattern = strtok(permissions, " ");
+    do {
+        if(find_permission(one_pattern) == -1){
+            printf("error : can not find Permission %s in pattern line %d\n", one_pattern, linenum);
+            return -1;
+        }
+        generate_pattern(patterns, per_edit_now->rule_head->next, linenum);
+        one_pattern = strtok(NULL, " ");
+    } while (one_pattern != NULL);
+    return 0;
+}
+
+int read_pattern(){
+    FILE *file;
+    int line_num = 0;
+    file = fopen(PATH_SYSCALL_PATTERN, "r");
+    system("cp pattern pattern.back && rm pattern");
+
+    if(file == NULL){
+        printf("error : fail to open syscall_pattern profile in %s!\n", PATH_SYSCALL_PATTERN);
+        goto error;
+    }
+     while (fgets(to_deal, CHAR_MAX_LENGTH, file) != NULL){
+        if(read_single_pattern(++ line_num) == -1){
+            printf("error : fail to load syscall_pattern profile in %s!\n", PATH_SYSCALL_PATTERN);
+            goto error;
+        }
+    }
+    fclose(file);
+    return 0;
+error:
+    // system("cp pattern.back pattern && rm pattern.back");
+    return -1;
+}
 
 int main(){
     init();
@@ -782,6 +839,8 @@ int main(){
     check_intersections();
     // 拆分State中的 '*'
     state_split();
+
+    read_pattern();
     // 生成最终策略文件
     generate_result();
     // 打印传入内核的state-rule
