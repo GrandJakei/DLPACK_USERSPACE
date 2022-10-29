@@ -758,14 +758,14 @@ void generate_pattern(char *patterns, struct rule_info *rule, int linenum){
         if(strcmp(rule->object_type, "file") == 0){
             /*  level（整数） keyword（整数，0、1、2代表deny、allow、audit） 1（整数，代表“file”） path（字符串） limit（整数） */
             printf("add pattern %s | %d %d 1 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
-            sprintf(cut_str, "%s | %d %d 1 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
+            sprintf(cut_str, "$P %s | %d %d 1 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
         } else if(strcmp(rule->object_type, "cap") == 0) {
             /*  level（整数） keyword（整数，0、1、2代表deny、allow、audit） 0（代表“cap”） capnum（整数） */
             printf("add pattern %s | %d %d 0 %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->limits);
-            sprintf(cut_str, "%s | %d %d 0 %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->limits);
+            sprintf(cut_str, "$P %s | %d %d 0 %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->limits);
         } else {
             printf("add pattern %s | %d %d 2 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
-            sprintf(cut_str, "%s | %d %d 2 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
+            sprintf(cut_str, "$P %s | %d %d 2 %s %ld \n", patterns, linenum, keyword2i(rule->keyword), rule->file_path, rule->limits);
         }
         fputs(cut_str, pattern);
         rule = rule->next;

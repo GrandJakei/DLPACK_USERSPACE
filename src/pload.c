@@ -8,7 +8,7 @@
 #define PATH_POLICY "result"
 #define PATH_SERVICE_PID "/sbin/dlpack/pid"
 #define PATH_LOAD_SP "/sys/kernel/security/dlpack/syscall_file"
-#define PATH_SYSCALL_PATTERN "policy_load/syscall_pattern"
+#define PATH_SYSCALL_PATTERN "pattern"
 //#define PATH_POLICY "result"
 #define CHAR_MAX_LENGTH 256
 char to_deal[CHAR_MAX_LENGTH];  // 待处理的一行文本

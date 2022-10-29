@@ -4,3 +4,6 @@ open ioctl  | 1 1 1 /path/to/speed_file 6
 open ioctl open  | 2 1 0 20 
 open ioctl open  | 2 2 2 /path/to/speed/* 10 
 open ioctl open  | 2 1 1 /path/to/speed_file 6 
+open  | 3 1 0 20 
+open  | 3 2 2 /path/to/speed/* 10 
+open  | 3 1 1 /path/to/speed_file 6 
